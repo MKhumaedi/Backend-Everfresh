@@ -1,0 +1,26 @@
+-- Enable Row Level Security (RLS) on all public tables
+-- Prisma connects via postgres role (superuser/bypassrls) and continues working smoothly.
+
+ALTER TABLE "public"."User" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."Media" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."ProductCategory" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."Product" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."ProductSpec" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."ProductFaq" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."ProductImage" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."Project" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."Service" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."ArticleCategory" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."Article" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."Testimonial" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."HeroBanner" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."HeroMachine" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."HomeSection" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."SiteSetting" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."Office" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."FeatureFlag" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."QuoteRequest" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."QuoteNote" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."QuoteStatusLog" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."ActivityLog" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."SearchLog" ENABLE ROW LEVEL SECURITY;

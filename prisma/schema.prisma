@@ -1,0 +1,333 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  SUPERADMIN
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum QuoteStatus {
+  NEW
+  CONTACTED
+  DONE
+}
+
+enum HomeSectionKey {
+  HERO
+  CATEGORIES
+  STATS
+  ABOUT
+  SERVICES
+  PROJECTS
+  TESTIMONIALS
+  CTA
+  NEWS
+}
+
+model User {
+  id                 String           @id @default(cuid())
+  name               String
+  email              String           @unique
+  passwordHash       String
+  role               Role             @default(ADMIN)
+  isActive           Boolean          @default(true)
+  mustChangePassword Boolean          @default(true)
+  lastLoginAt        DateTime?
+  createdById        String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  articles           Article[]
+  media              Media[]
+  activities         ActivityLog[]
+  notes              QuoteNote[]
+  statusLogs         QuoteStatusLog[]
+}
+
+model Media {
+  id           String   @id @default(cuid())
+  url          String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  width        Int?
+  height       Int?
+  altText      String?
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+}
+
+model ProductCategory {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  showInNav   Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  products    Product[]
+  projects    Project[]
+}
+
+model Product {
+  id            String          @id @default(cuid())
+  categoryId    String
+  category      ProductCategory @relation(fields: [categoryId], references: [id])
+  name          String
+  slug          String          @unique
+  shortDesc     String
+  description   String          @db.Text
+  capacityLabel String?
+  coverUrl      String?
+  status        PublishStatus   @default(DRAFT)
+  showInNav     Boolean         @default(true)
+  sortOrder     Int             @default(0)
+  metaTitle     String?
+  metaDesc      String?
+  publishedAt   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  specs         ProductSpec[]
+  faqs          ProductFaq[]
+  gallery       ProductImage[]
+  quotes        QuoteRequest[]
+
+  @@index([categoryId, status])
+}
+
+model ProductSpec {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  label     String
+  value     String
+  sortOrder Int     @default(0)
+}
+
+model ProductFaq {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String  @db.Text
+  sortOrder Int     @default(0)
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  sortOrder Int     @default(0)
+}
+
+model Project {
+  id            String           @id @default(cuid())
+  categoryId    String?
+  category      ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  title         String
+  slug          String           @unique
+  capacityLabel String?
+  location      String?
+  clientName    String?
+  description   String?          @db.Text
+  coverUrl      String?
+  isFeatured    Boolean          @default(false)
+  status        PublishStatus    @default(DRAFT)
+  sortOrder     Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([status, isFeatured])
+}
+
+model Service {
+  id        String        @id @default(cuid())
+  title     String
+  slug      String        @unique
+  summary   String
+  content   String        @db.Text
+  coverUrl  String?
+  status    PublishStatus @default(DRAFT)
+  showInNav Boolean       @default(true)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ArticleCategory {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  articles Article[]
+}
+
+model Article {
+  id          String           @id @default(cuid())
+  title       String
+  slug        String           @unique
+  excerpt     String
+  content     String           @db.Text
+  coverUrl    String?
+  categoryId  String?
+  category    ArticleCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorId    String
+  author      User             @relation(fields: [authorId], references: [id])
+  status      PublishStatus    @default(DRAFT)
+  publishedAt DateTime?
+  metaTitle   String?
+  metaDesc    String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([status, publishedAt])
+}
+
+model Testimonial {
+  id        String  @id @default(cuid())
+  name      String
+  role      String
+  quote     String  @db.Text
+  avatarUrl String?
+  rating    Int     @default(5)
+  isVisible Boolean @default(true)
+  sortOrder Int     @default(0)
+}
+
+model HeroBanner {
+  id             String        @id @default(cuid())
+  label          String?
+  title          String
+  subtitle       String?
+  primaryText    String?
+  primaryLink    String?
+  secondaryText  String?
+  secondaryLink  String?
+  imageUrl       String?
+  overlayOpacity Int           @default(40)
+  isActive       Boolean       @default(true)
+  sortOrder      Int           @default(0)
+  machines       HeroMachine[]
+}
+
+model HeroMachine {
+  id        String     @id @default(cuid())
+  heroId    String
+  hero      HeroBanner @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  label     String
+  subtitle  String?
+  imageUrl  String
+  linkUrl   String?
+  sortOrder Int        @default(0)
+  isActive  Boolean    @default(true)
+}
+
+model HomeSection {
+  id        String         @id @default(cuid())
+  key       HomeSectionKey @unique
+  title     String?
+  subtitle  String?
+  content   Json?
+  isVisible Boolean        @default(true)
+  sortOrder Int            @default(0)
+}
+
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Office {
+  id        String @id @default(cuid())
+  name      String
+  city      String
+  address   String
+  phone     String?
+  mapUrl    String?
+  sortOrder Int    @default(0)
+}
+
+model FeatureFlag {
+  key         String   @id
+  label       String
+  description String?
+  isEnabled   Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+}
+
+model QuoteRequest {
+  id         String           @id @default(cuid())
+  name       String
+  company    String?
+  whatsapp   String
+  email      String?
+  city       String?
+  productId  String?
+  product    Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+  capacity   String?
+  message    String?          @db.Text
+  status     QuoteStatus      @default(NEW)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  notes      QuoteNote[]
+  statusLogs QuoteStatusLog[]
+
+  @@index([status, createdAt])
+}
+
+model QuoteNote {
+  id        String       @id @default(cuid())
+  quoteId   String
+  quote     QuoteRequest @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  body      String       @db.Text
+  createdAt DateTime     @default(now())
+}
+
+model QuoteStatusLog {
+  id         String       @id @default(cuid())
+  quoteId    String
+  quote      QuoteRequest @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User         @relation(fields: [userId], references: [id])
+  fromStatus QuoteStatus
+  toStatus   QuoteStatus
+  createdAt  DateTime     @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model SearchLog {
+  id          String   @id @default(cuid())
+  query       String
+  resultCount Int
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([query])
+}
